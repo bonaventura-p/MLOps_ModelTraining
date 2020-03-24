@@ -2,14 +2,15 @@
 # This is a Python 2 image that uses the nginx, gunicorn, flask stack
 # for serving inferences in a stable way.
 
-FROM ubuntu:16.04
+FROM python:3.6
 
 MAINTAINER Amazon AI <sage-learner@amazon.com>
 
 
 
-RUN !pip install tensorflow -t ./ \
-        rm -rf /root/.cache
+RUN !pip install tensorflow -t ./ && \
+    !pip install keras && \ !pip install gunicorn 
+
 
 # Set some environment variables. PYTHONUNBUFFERED keeps Python from buffering our standard
 # output stream, which means that logs can be delivered to the user quickly. PYTHONDONTWRITEBYTECODE
