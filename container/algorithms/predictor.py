@@ -1,5 +1,4 @@
-# This is the file that implements a flask server to do inferences. It's the file that you will modify to
-# implement the scoring for your own algorithm.
+# This is the file that implements a flask server to do inferences.
 
 from __future__ import print_function
 
@@ -15,7 +14,7 @@ import flask
 
 import pandas as pd
 
-prefix = './opt/ml/'
+prefix = '/opt/ml/'
 model_path = os.path.join(prefix, 'model')
 
 # A singleton for holding the model. This simply loads the model and holds it.
