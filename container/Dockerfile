@@ -6,6 +6,8 @@ FROM python:3.6
 
 COPY "requirements.txt" .
 RUN ["pip", "install","-r", "requirements.txt"]
+COPY "app.py" 
+
 
 # Set some environment variables. PYTHONUNBUFFERED keeps Python from buffering our standard
 # output stream, which means that logs can be delivered to the user quickly. PYTHONDONTWRITEBYTECODE
@@ -15,7 +17,10 @@ RUN ["pip", "install","-r", "requirements.txt"]
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
+ENV FLASK_APP app.py
 
 # Set up the program in the image
 COPY algorithms /opt/program
 WORKDIR /opt/program
+
+EXPOSE 8080
