@@ -7,7 +7,7 @@ FROM ubuntu:16.04
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
          wget \
-         python3 \
+         python \
          nginx \
          ca-certificates \
     && rm -rf /var/lib/apt/lists/*
@@ -17,8 +17,10 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
 # linking them together. Likewise, pip leaves the install caches populated which uses
 # a significant amount of space. These optimizations save a fair amount of space in the
 # image, which reduces start up time.
+
+#try without tensorflow(as backend) and requires py3
 RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py && \
-    pip install numpy scipy scikit-learn pandas flask gevent gunicorn && \
+    pip install numpy scipy==1.2.2 scikit-learn keras pandas flask gevent gunicorn tensorflow && \
         rm -rf /root/.cache
 
 # Set some environment variables. PYTHONUNBUFFERED keeps Python from buffering our standard
@@ -31,5 +33,5 @@ ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
 
 # Set up the program in the image
-COPY decision_trees /opt/program
+COPY algorithms /opt/program
 WORKDIR /opt/program

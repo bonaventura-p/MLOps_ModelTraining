@@ -7,13 +7,11 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Reshape, LSTM, Input
 from keras.utils import np_utils
-
+from keras.optimizers import Adamax
 from sklearn import metrics
 from sklearn.metrics import classification_report
 
 
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 from scipy import stats
 import numpy as np
@@ -26,7 +24,7 @@ import os
 import json
 import pickle
 import sys
-
+import traceback
 
 # These are the paths to where SageMaker mounts interesting things in your container.
 
@@ -60,25 +58,30 @@ def train():
         raw_data = [ pd.read_csv(file) for file in input_files ]
         train_data = pd.concat(raw_data)
 
+
+        X_train, X_test, y_train, y_test = preprocess(train_data, testSize=0.1) #anyways, we do not care about the holdout atm
+        
         print(train_data.iloc[0])
 
-        X_train, X_test, y_train, y_test = preprocess(train_data, testSize=0.2) #anyways, we do not care about the holdout atm
 
-        model_lstm=lstm_model()
+        lstmModel=LstmModel()
 
-        BATCH_SIZE = 400
-        EPOCHS = 2
+        BATCH_SIZE = 1000
+        EPOCHS = 5
+        
+        print(EPOCHS)
 
-        history = model_lstm.fit(X_train,
+        history = lstmModel.fit(X_train,
                       y_train,
                       batch_size=BATCH_SIZE,
                       epochs=EPOCHS,
                       validation_split=0.3,
                       verbose=1)
-
+        
         # save the model
         with open(os.path.join(model_path, 'lstm-model.pkl'), 'wb') as out:
-            pickle.dump(history, out)
+            #storing the model and not the history
+            pickle.dump(lstmModel, out) 
         print('Training complete.')
     except Exception as e:
         # Printing this causes the exception to be in the training job logs, as well.
@@ -86,7 +89,7 @@ def train():
         # A non-zero exit code causes the training job to be marked as Failed.
         sys.exit(255)
 
-def preprocess(df, timeSteps=400, step=20, testSize=0.2):
+def preprocess(df, timeSteps=400, step=40, testSize=0.2):
     '''preprocessing and split'''
     features=3
     RANDOM_SEED = 1992
@@ -94,8 +97,25 @@ def preprocess(df, timeSteps=400, step=20, testSize=0.2):
     labels = []
 
     print('Preprocessing started')
+    
+    df = df.fillna(0)
+    
+    #normalise data otherwise loss= nan
+    df['z-axis'] = df['z-axis'].astype(float)
 
-    #we reshape into 3d arrays of length ewual to timesteps. final df is= (N*timesteps*3)
+    df['x-axis'] = (df['x-axis'] - df['x-axis'].min())/(df['x-axis'].max()-df['x-axis'].min())
+    df['y-axis'] = (df['y-axis'] - df['y-axis'].min())/(df['y-axis'].max()-df['y-axis'].min())
+    df['z-axis'] = (df['z-axis'] - df['z-axis'].min())/(df['z-axis'].max()-df['z-axis'].min())
+    
+    print( df['x-axis'].min(), df['y-axis'].min(), df['z-axis'].min())
+    #redo it with  df.shape[0]%20 ==0 trying out different divisors (12 16 18 20 24) and a while to get to the largest
+    try:
+        np.random.shuffle(df.values.reshape(-1,int(np.floor(df.shape[0]/20)),df.shape[1]))
+    except ValueError:
+        np.random.shuffle(df.values.reshape(-1,int(np.floor(df.shape[0]/12)),df.shape[1]))
+
+
+    #we reshape into 3d arrays of length evual to timesteps. final df is= (N*timesteps*3)
     for i in range(0, len(df) - timeSteps, step):
         xs = df['x-axis'].values[i: i + timeSteps]
         ys = df['y-axis'].values[i: i + timeSteps]
@@ -112,17 +132,23 @@ def preprocess(df, timeSteps=400, step=20, testSize=0.2):
         reshaped_segments, labels, test_size=testSize, random_state=RANDOM_SEED)
 
 
-def lstm_model(units = 32, num_classes = 6):
-    '''Long shor-term memory model with 2 layers of lstm cells and one fully connected layer on top'''
+def LstmModel(units = 48, num_classes = 6):
+    '''Long short-term memory model with 2 layers of lstm cells and one fully connected layer on top'''
 
-    model_lstm = Sequential()
-    model_lstm.add(LSTM(units, return_sequences=True))
-    model_lstm.add(LSTM(units, return_sequences=False))
-    model_lstm.add(Dense(num_classes, activation = 'softmax'))
+    LstmModel = Sequential()
+    LstmModel.add(LSTM(units, return_sequences=True))
+    #LstmModel.add(LSTM(int(units/2), return_sequences=True))
+    #LstmModel.add(LSTM(int(units/4), return_sequences=True))
+    LstmModel.add(LSTM(int(units/8), return_sequences=True))
+    LstmModel.add(LSTM(int(units/8), return_sequences=False))
+    LstmModel.add(Dense(num_classes, activation = 'softmax'))
 
-    model_lstm.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['accuracy'])
+       
+    adamx= Adamax(learning_rate=0.01, beta_1=0.9, beta_2=0.999)
+    LstmModel.compile(optimizer=adamx, loss='categorical_crossentropy', metrics=['accuracy']) #'Adam'
 
-    return model_lstm
+    return LstmModel
+
 
 
 if __name__ == '__main__':
