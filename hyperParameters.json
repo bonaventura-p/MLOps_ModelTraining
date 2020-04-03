@@ -1,0 +1,1 @@
+{"jobTrainingId": "sagemaker-lstm-2020-04-01-19-39-56-056", "outputPath": "s3://sagemaker-wisdm2/output", "imageLocation": "264421419663.dkr.ecr.us-east-1.amazonaws.com/sagemaker-lstm:latest"}
