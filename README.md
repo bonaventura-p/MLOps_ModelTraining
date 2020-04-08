@@ -2,7 +2,7 @@
 
 Please open a SageMaker instance on AWS and clone this git folder.
 
-Then open the get_data notebook to pull the experimental data from WISDM. Please ensure that the S3 bucket name is correct, you have access to it.
+Then open the get_data notebook to pull the data from WISDM. This data is needed in order to run the experiment. Please ensure that the S3 bucket name is correct, and that you have access to it.
 
 Running the ModelTrainDeploy notebook will do everything for you, provided that you have access to the S3 buckets. Otherwise, replace the S3 bucket path with one you have access to.
 
