@@ -8,6 +8,6 @@ Running the ModelTrainDeploy notebook will do everything for you, provided that 
 
 Finally, you can upload your own test data (assuming they have a suitable structure) and push it to the endpoint to obtain the predicted results. In misc, you can find an example test file from WISDM.
 
-The image below presents an architecture of the entire system. This repository runs an experiment using WISDM data for the Data Stream Processor.
+The image below presents an architecture of the entire system. This repository trains a LSTM model and deploys an endpoint that could be used to as a fully-functional prototype of the Data Stream Processor.
 
 ![](./images/race-vr.png)
