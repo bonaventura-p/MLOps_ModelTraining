@@ -9,4 +9,4 @@ Running the ModelTrainDeploy notebook will do everything for you, provided that 
 Finally, you can upload your own test data (assuming they have a suitable structure) and push it to the endpoint to obtain the predicted results. In misc, you can find an example test file from WISDM.
 
 
-![alt text](https://github.com/bonaventura-p/race-vr/misc/race-vr.png)
+![alt text](https://github.com/bonaventura-p/race-vr/images/race-vr.png)
